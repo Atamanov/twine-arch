@@ -22,7 +22,7 @@ Twine is a unified settlement network designed to connect heterogeneous blockcha
 Twine introduces a fundamentally different approach using **cryptographic verification instead of trust**:
 
 - **Zero-Knowledge Consensus Proofs**: Cryptographically verify Layer 1 blockchain states without relying on external validators or oracles
-- **Universal Asset Interoperability**: Native assets from Ethereum, Solana, and Bitcoin interact without wrapped tokens or trust assumptions
+- **Universal Asset Interoperability**: Native assets from Ethereum, Solana, and Bitcoin interact without wrapped tokens or trust assumptions other than underlying ZK proving systems.
 - **Chain-Agnostic Development**: Build once on Twine and access liquidity across all connected chains
 - **Multi-Chain Security**: Inherit security from multiple Layer 1 chains simultaneously through ZK proof verification
 - **No Opt-In Required**: Connect any blockchain through consensus proofs—no permission needed from source chains
