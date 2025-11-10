@@ -1,0 +1,18 @@
+title: Twine Architecture
+description: Trust-Minimized Cross-Chain Interoperability via Zero-Knowledge Cryptography
+theme: jekyll-theme-cayman
+
+# Markdown settings
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  
+# Enable mermaid diagrams
+plugins:
+  - jekyll-relative-links
+
+relative_links:
+  enabled: true
+  collections: true
+
