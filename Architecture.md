@@ -130,13 +130,16 @@ Twine provides two parallel execution environments, both enhanced with trust-min
 Universal consensus verification layer enabling trust-minimized verification of multiple Layer 1 blockchain states.
 
 **Supported Chains**:
-- **Ethereum**: Full consensus proofs via BLS signature aggregation (sync committee + full attestations) using ZKVM + GKR
-- **Solana**: First functional Solana ZK light client with Ed25519 verification and GKR batch processing
+- **Ethereum**: Full consensus proofs via BLS signature aggregation (sync committee + full attestations up to 65,536 validators from 2M+ validator set) using **SP1/Risc0 ZKVMs**
+- **Solana**: First functional Solana ZK light client with Ed25519 verification using **SP1/Risc0 ZKVMs**
 - **Bitcoin**: BitVM-based fraud-proof verification (in development)
 
-**Key Innovation**: Cryptographically prove Layer 1 blockchain states using the **GKR (Goldwasser-Kalai-Rothblum) protocol** ([see Vitalik's GKR explanation](https://vitalik.eth.limo/general/2025/10/19/gkr.html)) combined with ZKVMs, achieving ~10-15x overhead vs naive computation (compared to ~100x for traditional SNARKs). No trusted intermediaries—only mathematics.
+**Key Innovation**: Cryptographically prove Layer 1 blockchain states using ZKVMs (SP1/Risc0) with future **GKR (Goldwasser-Kalai-Rothblum) protocol** optimization ([see Vitalik's GKR explanation](https://vitalik.eth.limo/general/2025/10/19/gkr.html)) planned to achieve ~10-15x overhead vs naive computation (compared to current ~100x with ZKVMs). No trusted intermediaries—only mathematics.
 
-**Trust Minimization**: No reliance on oracles or validator committees—consensus proofs verify all blockchain constraints cryptographically and are checked on-chain. GKR enables efficient proving without compromising security.
+**Current**: Production-ready consensus provers on SP1/Risc0 ZKVMs  
+**Future**: GKR optimization for 7-10x faster proving (in development)
+
+**Trust Minimization**: No reliance on oracles or validator committees—consensus proofs verify all blockchain constraints cryptographically and are checked on-chain using ZKVMs. Future GKR optimization will improve efficiency without compromising security.
 
 ### 3. [Zero-Knowledge Proof Stack](./zk-proof-stack.md)
 

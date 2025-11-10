@@ -28,22 +28,37 @@ Twine's consensus proofs provide:
 - ✅ Publicly verifiable and reproducible
 - ✅ No trusted intermediaries
 
-### Why GKR (Goldwasser-Kalai-Rothblum) Protocol is Critical
+### Current Implementation: ZKVM Consensus Provers
 
-Consensus proving involves verifying hundreds or thousands of validator signatures in parallel—a perfect fit for the **GKR protocol** ([Vitalik's GKR Tutorial](https://vitalik.eth.limo/general/2025/10/19/gkr.html)).
+**Production Status**: Twine's consensus provers are currently implemented on **SP1** and **Risc0** zero-knowledge virtual machines, providing trust-minimized verification of Ethereum and Solana consensus.
 
-**The Efficiency Problem**:
+**SP1 ZKVM**:
+- BLS12-381 signature aggregation for Ethereum
+- Ed25519 signature verification for Solana
+- Efficient pairing operations and elliptic curve arithmetic
+- Production-ready with proven security properties
 
-Traditional ZK-SNARKs for consensus proving:
+**Risc0 ZKVM**:
+- Alternative ZKVM implementation for consensus proving
+- Different performance characteristics and optimization strategies
+- Provides redundancy and proving system diversity
+
+### Future Optimization: GKR Protocol (In Development)
+
+**GKR (Goldwasser-Kalai-Rothblum)** is being developed to significantly improve consensus proving efficiency ([see Vitalik's GKR Tutorial](https://vitalik.eth.limo/general/2025/10/19/gkr.html)).
+
+**The Efficiency Problem with Current Approach**:
+
+Traditional ZK-SNARKs (including current ZKVM implementations):
 - Must commit to intermediate verification steps (Merkle trees or KZG commitments)
 - Hashing 4-16 bytes for each byte of intermediate data
 - ~100x overhead vs naive computation
 - Memory-intensive commitment operations
 
-**GKR's Solution**:
+**GKR's Solution** (Planned):
 
 GKR is designed for computations with "batch and layers" structure:
-- **Batch**: Same function applied to many inputs (e.g., 512 validator signatures)
+- **Batch**: Same function applied to many inputs (e.g., 65,536 validator attestations)
 - **Layers**: Processing through multiple computational steps (verify → aggregate → threshold check)
 
 **Key Innovation**: GKR **avoids committing to intermediate layers**:
@@ -54,19 +69,19 @@ GKR is designed for computations with "batch and layers" structure:
 
 **Why This Matters for Consensus**:
 
-Ethereum example:
-- 512 sync committee signatures → verify each → aggregate → check threshold
-- Traditional SNARK: Commit to 512 verification results, then to aggregation, then to threshold check
-- **GKR**: Prove the final threshold result directly using sumchecks, no intermediate commitments
+Ethereum example (full attestations):
+- Up to 65,536 attestations (256×256) → verify each → aggregate → check threshold
+- Current ZKVM: Commit to verification results at multiple layers (~100x overhead)
+- **Future GKR**: Prove the final threshold result directly using sumchecks (~10-15x overhead)
 
 Solana example:
 - 1000+ validator votes → verify Ed25519 sigs → weight by stake → sum → check 66% threshold
-- Traditional SNARK: Commit at each layer (signatures, stakes, weighted votes, sum)
-- **GKR**: Only commit to inputs and final consensus result
+- Current ZKVM: Commit at each layer (signatures, stakes, weighted votes, sum)
+- **Future GKR**: Only commit to inputs and final consensus result
 
-**Result**: Consensus proving becomes practical enough for production use—proving thousands of validator signatures with only 10-15x overhead.
+**Expected Result**: 7-10x faster consensus proving while maintaining the same security guarantees.
 
-**Trust Minimization**: GKR is a proving technique, not a trust assumption. The proof is still cryptographically sound and verifiable on-chain.
+**Trust Minimization**: GKR is a proving technique, not a trust assumption. The proof remains cryptographically sound and verifiable on-chain.
 
 ## Multi-Chain Consensus Proving
 
@@ -130,42 +145,43 @@ Twine's Ethereum consensus proofs verify the complete set of consensus rules:
 1. Sync committee rotates every ~27 hours (256 epochs)
 2. 512 validators randomly selected from active validator set
 3. Validators sign beacon block headers with BLS signatures
-4. Twine aggregates signatures and generates ZK proof using **ZKVM + GKR**
+4. Twine aggregates signatures and generates ZK proof using **SP1/Risc0 ZKVM**
 
-**Proving System Architecture**:
+**Current Proving System (Production)**:
 
-Twine uses a hybrid proving approach combining **SP1 ZKVM** and **GKR (Goldwasser-Kalai-Rothblum) protocol**:
-
-**ZKVM for Signature Verification**:
-- BLS12-381 signature verification executed in SP1 ZKVM
-- Pairing operations for signature aggregation
-- Merkle proof verification for validator membership
+**SP1 ZKVM Implementation**:
+- BLS12-381 signature aggregation executed in SP1 ZKVM
+- BLS precompiles for efficient pairing operations
+- Merkle proof verification for sync committee membership
+- Batch verification of 512 validator signatures
 - Overall circuit coordination and constraint checking
+- Groth16 proof compression for on-chain verification
 
-**GKR for Batch Processing** ([see Vitalik's GKR post](https://vitalik.eth.limo/general/2025/10/19/gkr.html)):
-- Processes 512 validator signatures in parallel with minimal overhead
-- Avoids committing to intermediate verification steps
-- Only commits to inputs (validator keys, signatures) and outputs (verification result)
-- Achieves ~10-15x overhead vs naive computation (compared to ~100x for traditional SNARKs)
+**Risc0 ZKVM Alternative**:
+- Alternative ZKVM implementation providing proving system diversity
+- Different optimization strategies and performance characteristics
+- Fallback option for proving redundancy
 
-**Why GKR is Critical**:
-- **Efficiency**: Proving 512 BLS signatures in parallel without intermediate Merkle tree commitments
-- **Low Overhead**: GKR adds only 10-15x overhead vs traditional STARK's 100x overhead
-- **Parallelization**: Batch structure (512 validators) maps perfectly to GKR's "batch and layers" pattern
-- **Memory Efficiency**: Avoids expensive commitment operations at each proving layer
-
-**Technical Implementation**:
-- Uses BLS12-381 signature aggregation in SP1 ZKVM
-- GKR sumchecks prove batch signature verification without intermediate commitments
-- Generates Groth16 proof for gas-efficient on-chain verification
-- Verifies sync committee membership via Merkle proofs
-- Extracts state root for account/storage verification
-
-**Performance**:
-- **Proving Time**: ~1 minute with BLS precompiles + GKR optimization
+**Current Performance**:
+- **Proving Time**: ~1-2 minutes with BLS precompiles
 - **Verification Cost**: ~300-500k gas on Ethereum (constant time)
 - **Security Level**: Honest majority of 512 validators required
 - **Proof Size**: ~256 bytes (Groth16 compressed)
+
+**Future Optimization with GKR** (In Development):
+
+**GKR for Batch Processing** ([see Vitalik's GKR post](https://vitalik.eth.limo/general/2025/10/19/gkr.html)):
+- Will process 512 validator signatures in parallel with minimal overhead
+- Avoids committing to intermediate verification steps
+- Only commits to inputs (validator keys, signatures) and outputs (verification result)
+- **Expected improvement**: ~7-10x faster proving (from ~1-2 minutes to ~10-15 seconds)
+- Achieves ~10-15x overhead vs naive computation (compared to current ~100x)
+
+**Why GKR Will Be Critical** (When Launched):
+- **Efficiency**: Proving 512 BLS signatures without intermediate Merkle tree commitments
+- **Low Overhead**: GKR adds only 10-15x overhead vs current ~100x overhead
+- **Parallelization**: Batch structure (512 validators) maps perfectly to GKR's "batch and layers" pattern
+- **Memory Efficiency**: Avoids expensive commitment operations at each proving layer
 
 **Use Cases**:
 - Rapid finality confirmations
@@ -177,58 +193,68 @@ Twine uses a hybrid proving approach combining **SP1 ZKVM** and **GKR (Goldwasse
 
 ### Full Attestation Verification (Maximum Security)
 
-**What**: Verifies up to 128 attestations representing ~30,000 BLS signatures from Ethereum's full validator set
+**What**: Verifies up to **65,536 attestations (256×256)** from Ethereum's validator set of up to **2 million validators**
+
+**Scale**:
+- Ethereum's validator set: Up to ~2,000,000 active validators
+- Each attestation: Aggregated BLS signature from multiple validators
+- Max capacity: 256 attestations × 256 sub-aggregations = 65,536 validator signatures per proof
+- Represents full crypto-economic security of Ethereum
 
 **How it Works**:
 1. Collect attestations from Ethereum beacon chain for a specific slot
-2. Aggregate up to 128 attestations (each containing ~250 validator signatures)
-3. Verify BLS signature aggregation in zero-knowledge using ZKVM + GKR
+2. Aggregate up to 65,536 validator signatures (256×256 structure)
+3. Verify BLS signature aggregation in zero-knowledge using **SP1/Risc0 ZKVM**
 4. Generate Groth16 proof of full attestation verification
 5. Extract state root with full crypto-economic security
 
-**Proving System Architecture**:
+**Current Proving System (Production)**:
 
-**ZKVM + GKR Hybrid Approach** ([GKR protocol](https://vitalik.eth.limo/general/2025/10/19/gkr.html)):
-
-**Why Full Attestations Need Advanced Proving**:
-- 30,000+ BLS signatures in a single proof
-- Each signature requires pairing operations (computationally expensive)
-- Traditional SNARKs would have ~100x overhead
-- GKR reduces overhead to ~10-15x by avoiding intermediate commitments
-
-**ZKVM for Complex Operations**:
-- SP1 ZKVM executes BLS pairing operations
-- Handles Merkle proof verification for validator participation
+**SP1 ZKVM Implementation**:
+- BLS12-381 signature aggregation executed in SP1 ZKVM
+- Efficient BLS pairing operations using precompiles
+- Handles up to 65,536 validator signatures per proof
+- Merkle proof verification for validator participation from 2M+ validator set
 - Manages epoch transitions and validator set updates
 - Coordinates overall constraint verification
 
-**GKR for Batch Signature Verification**:
-- Processes 30,000+ signatures in "batch and layers" pattern
-- Layer 1: Individual signature verifications (parallel, same function applied to each)
-- Layer 2: Aggregation of verification results
-- Layer 3: Final consensus check (supermajority threshold)
-- **Key Efficiency**: No commitments to intermediate verification states—only commit to validator keys (input) and aggregated result (output)
+**Risc0 ZKVM Alternative**:
+- Alternative implementation for proving system redundancy
+- Different optimization strategies for large-scale signature verification
+- Fallback option ensuring continuous operation
 
 **Constraint Verification in ZK Circuit**:
-- Verify each validator signed the correct beacon block header
-- Prove validator stake amounts from beacon state
+- Verify each of 65,536 validators signed the correct beacon block header
+- Prove validator stake amounts from beacon state (from up to 2M validator registry)
 - Confirm supermajority threshold (2/3+ of total stake)
 - Check attestation target and source consistency
 - Validate epoch boundary conditions
+- Verify committee inclusion proofs from full validator set
 
-**Technical Implementation**:
-- BLS signature aggregation using zkSNARK-friendly precompiles in SP1
-- GKR sumchecks for parallel batch verification without intermediate commitments
-- Efficient validator set tracking across epochs via incremental Merkle proofs
-- State root extraction for account/storage verification
-- Optimized circuits for ~30K parallel signature verifications
-
-**Performance**:
-- **Proving Time**: ~30 minutes on SP1 Prover Network (with GKR optimization)
+**Current Performance**:
+- **Proving Time**: ~30-45 minutes on SP1 Prover Network (65,536 signatures)
 - **Verification Cost**: ~300-500k gas (constant, independent of attestation count)
 - **Security Level**: Full crypto-economic security from Ethereum validator set
 - **Proof Size**: ~256 bytes (Groth16 compressed)
-- **Overhead**: ~10-15x vs naive computation (vs ~100x without GKR)
+- **Validator Set**: Up to 2,000,000 validators supported
+- **Attestations per Proof**: Up to 65,536 (256×256)
+
+**Future Optimization with GKR** (In Development):
+
+**GKR for Massive Batch Signature Verification**:
+- Will process 65,536 signatures in "batch and layers" pattern with minimal overhead
+- Layer structure:
+  - **Layer 1**: Individual BLS signature verifications (65,536 parallel operations)
+  - **Layer 2**: Aggregation of verification results
+  - **Layer 3**: Final consensus check (supermajority threshold)
+- **Key Efficiency**: No commitments to intermediate verification states
+- **Expected improvement**: 7-10x faster proving (from ~30-45 minutes to ~3-5 minutes)
+- Achieves ~10-15x overhead vs naive computation
+
+**Why GKR is Critical at This Scale**:
+- Current: Must commit to results of 65,536 signature verifications (~100x overhead)
+- Future with GKR: Only commit to inputs and final result (~10-15x overhead)
+- **Performance Impact**: Makes proving 2M+ validator set practical for production
 
 **Use Cases**:
 - High-value settlements (>$100K equivalent)
@@ -316,28 +342,46 @@ Twine's Solana consensus proofs verify the complete set of Solana consensus rule
 - Track stake changes across epochs (~2.5 days)
 - Compute total active stake for threshold calculations
 
-**2. Vote Aggregation with ZKVM + GKR**:
+**2. Vote Aggregation and Verification**:
 
-**ZKVM for Signature Verification**:
+**Current Implementation (Production)**:
+
+**SP1 ZKVM for Signature Verification**:
 - Ed25519 signatures verified in SP1 ZKVM
 - Each validator's vote transaction signature checked cryptographically
-- Vote account state proofs validated
+- Vote account state proofs validated via Merkle inclusion
+- Batch verification of hundreds to thousands of validator votes
+- Stake-weighted vote counting and threshold verification
+
+**Risc0 ZKVM Alternative**:
+- Alternative ZKVM implementation for proving redundancy
+- Different performance characteristics for Solana consensus
+- Ensures continuous light client operation
+
+**Current Performance**:
+- **Proving Time**: ~2-5 minutes (batch of 100 slots, 500-1500 validators per slot)
+- **Validator Capacity**: Up to 3,000 validators per proof
+- **Overhead**: ~100x vs naive computation (current ZKVM approach)
+
+**Future Optimization with GKR** (In Development):
 
 **GKR for Batch Vote Processing** ([GKR protocol](https://vitalik.eth.limo/general/2025/10/19/gkr.html)):
-- Processes hundreds/thousands of validator votes in parallel
+- Will process thousands of validator votes in parallel with minimal overhead
 - Layer structure:
   - **Layer 1**: Individual Ed25519 signature verifications (parallel, same function)
   - **Layer 2**: Stake weight lookups and multiplications
   - **Layer 3**: Weighted vote summation
   - **Layer 4**: Threshold check (66%+ stake requirement)
 - **Key Efficiency**: No intermediate commitments—only commit to vote data (input) and consensus result (output)
-- **Overhead**: ~10-15x vs naive computation (vs ~100x for traditional SNARKs)
+- **Expected improvement**: 7-10x faster proving (from ~2-5 minutes to ~20-40 seconds per 100 slots)
+- Target overhead: ~10-15x vs naive computation
 
-**Why GKR is Critical for Solana**:
-- **High Frequency**: Solana's 400ms slot time requires fast proving
+**Why GKR Will Be Critical for Solana** (When Launched):
+- **High Frequency**: Solana's 400ms slot time benefits greatly from faster proving
 - **Batch Structure**: Hundreds of validators voting in parallel fits GKR's "batch and layers" pattern perfectly
 - **Low Overhead**: GKR's efficiency enables near-real-time consensus proving
 - **Memory Efficiency**: Avoids expensive Merkle tree commitments at each verification layer
+- **Scalability**: Handle validator set growth without linear proving cost increase
 
 **3. Finality Tracking**:
 - **Optimistic Finality**: 2/3 stake voted (~400ms, 1 slot confirmation)
@@ -353,23 +397,29 @@ Twine's Solana consensus proofs verify the complete set of Solana consensus rule
 
 ### Technical Implementation
 
-**Ed25519 Signature Verification in ZK**:
+**Current ZKVM Implementation**:
+
+**Ed25519 Signature Verification in SP1/Risc0**:
 - Ed25519 signatures verified within SP1 ZKVM using optimized elliptic curve circuits
 - Curve25519 point operations for public key recovery
-- Batch signature verification across multiple validators
+- Batch signature verification across multiple validators (up to 3,000 per proof)
 - Efficient elliptic curve arithmetic in ZKVM
+- Stake-weighted vote counting and threshold checking
 
-**Stake-Weighted Vote Counting with GKR**:
-- GKR processes parallel stake lookups and vote weight computations
-- Circuit structure:
-  - **Layer 1**: Fetch stake weights for each validator (parallel reads)
-  - **Layer 2**: Multiply each vote by corresponding stake weight
-  - **Layer 3**: Sum all weighted votes
-  - **Layer 4**: Compare against total stake threshold (66%+)
-- **Efficiency**: GKR sumchecks avoid committing to intermediate stake weight array
-- Only commit to validator list (input) and weighted sum (output)
+**Constraint Verification Circuit** (Current):
+```
+Inputs: [validator_pubkeys[], vote_sigs[], stake_amounts[], block_hash]
+  ↓
+SP1/Risc0 ZKVM:
+  - Verify Ed25519(vote_sig[i], validator_pubkey[i], block_hash) ∀i
+  - Fetch stake_weight[i] for each validator
+  - Compute weighted_votes = Σ(vote_valid[i] × stake_weight[i])
+  - Verify weighted_votes ≥ 0.66 × total_stake
+  ↓
+Output: [consensus_valid: bool, block_hash: bytes32]
+```
 
-**Constraint Verification Circuit**:
+**Future GKR-Optimized Circuit** (In Development):
 ```
 Inputs: [validator_pubkeys[], vote_sigs[], stake_amounts[], block_hash]
   ↓
@@ -385,10 +435,10 @@ Output: [consensus_valid: bool, block_hash: bytes32]
 ```
 
 **Slot Time Optimization**:
-- Optimized for Solana's 400ms slot time with minimal proving overhead
+- Current: Optimized for Solana's 400ms slot time with batch proving
 - Batch processing: Prove 100 slots together (~40 seconds of Solana time)
 - Incremental proof updates for rapid confirmations
-- GKR enables fast proving despite high validator count
+- Future: GKR will enable even faster proving despite high validator count
 
 **RPC Integration**:
 - Fetches vote data from Solana RPC (`getConfirmedSignaturesForAddress2`)
@@ -404,15 +454,28 @@ Output: [consensus_valid: bool, block_hash: bytes32]
 
 ### Performance Characteristics
 
+**Current (SP1/Risc0 ZKVM)**:
+
 | Metric | Value |
 |--------|-------|
-| **Proving Time** | ~2-5 minutes (batch of 100 slots with GKR) |
+| **Proving Time** | ~2-5 minutes (batch of 100 slots) |
 | **Finality** | 400ms (optimistic), ~13s (absolute), ~3s (rooted) |
 | **Verification Cost** | ~300-500k gas on Ethereum (Groth16) |
 | **Throughput** | 100+ slots per proof |
 | **Proof Size** | ~256 bytes (Groth16 compressed) |
-| **Overhead** | ~10-15x vs naive computation (thanks to GKR) |
-| **Validators Proven** | 500-1500 validators per slot (Solana mainnet) |
+| **Overhead** | ~100x vs naive computation |
+| **Validators per Slot** | 500-1500 validators (Solana mainnet) |
+| **Max Validators per Proof** | ~3,000 validators |
+
+**Future (With GKR Optimization)**:
+
+| Metric | Value |
+|--------|-------|
+| **Proving Time** | ~20-40 seconds (batch of 100 slots) |
+| **Overhead** | ~10-15x vs naive computation |
+| **Improvement** | 7-10x faster proving |
+| **Validators per Slot** | 500-1500+ validators (no degradation with growth) |
+| **Max Validators per Proof** | 10,000+ validators (scalable) |
 
 ### Security Model
 
