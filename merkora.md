@@ -1,3 +1,8 @@
+---
+layout: default
+title: Merkora - Cross-Chain Relayer
+---
+
 # Merkora: Cross-Chain Relayer
 
 [← Back to Architecture Overview](./Architecture.md)

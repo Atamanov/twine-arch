@@ -1,3 +1,8 @@
+---
+layout: default
+title: Twine Sequencer
+---
+
 # Twine Sequencer
 
 [← Back to Architecture Overview](./Architecture.md)

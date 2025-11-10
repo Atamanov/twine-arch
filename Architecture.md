@@ -1,3 +1,8 @@
+---
+layout: default
+title: Architecture Overview
+---
+
     # Twine Architecture
 
     Understanding Twine's technical architecture and how its components work together to enable universal blockchain interoperability through trust-minimized zero-knowledge cryptography.

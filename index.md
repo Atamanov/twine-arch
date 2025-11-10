@@ -1,3 +1,8 @@
+---
+layout: default
+title: Home
+---
+
 # Twine Architecture Documentation
 
 **Trust-Minimized Cross-Chain Interoperability via Zero-Knowledge Cryptography**

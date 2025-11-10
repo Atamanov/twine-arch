@@ -1,3 +1,8 @@
+---
+layout: default
+title: Proof Orchestration Layer
+---
+
 # Proof Orchestration Layer
 
 [← Back to Architecture Overview](./Architecture.md)

@@ -1,3 +1,8 @@
+---
+layout: default
+title: Data Availability Architecture
+---
+
 # Data Availability Architecture
 
 [← Back to Architecture Overview](./Architecture.md)

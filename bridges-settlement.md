@@ -1,3 +1,8 @@
+---
+layout: default
+title: Canonical Bridges & Settlement
+---
+
 # Canonical Bridges & Settlement
 
 [← Back to Architecture Overview](./Architecture.md)

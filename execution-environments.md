@@ -1,3 +1,8 @@
+---
+layout: default
+title: Execution Environments
+---
+
 # Execution Environments
 
 [← Back to Architecture Overview](./Architecture.md)

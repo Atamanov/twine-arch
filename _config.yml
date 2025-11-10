@@ -1,18 +1,24 @@
 title: Twine Architecture
 description: Trust-Minimized Cross-Chain Interoperability via Zero-Knowledge Cryptography
-theme: jekyll-theme-cayman
+remote_theme: pages-themes/cayman@v0.2.0
 
 # Markdown settings
 markdown: kramdown
 kramdown:
   input: GFM
   syntax_highlighter: rouge
+  parse_block_html: true
   
-# Enable mermaid diagrams
+# Plugins
 plugins:
+  - jekyll-remote-theme
   - jekyll-relative-links
 
 relative_links:
   enabled: true
   collections: true
+
+# GitHub repository
+github:
+  repository_url: https://github.com/Atamanov/twine-arch
 

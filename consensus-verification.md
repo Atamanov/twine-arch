@@ -1,3 +1,8 @@
+---
+layout: default
+title: Consensus Verification System
+---
+
 # Consensus Verification System
 
 [← Back to Architecture Overview](./Architecture.md)

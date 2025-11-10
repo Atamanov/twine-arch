@@ -1,3 +1,8 @@
+---
+layout: default
+title: Zero-Knowledge Proof Stack
+---
+
 # Zero-Knowledge Proof Stack
 
 [← Back to Architecture Overview](./Architecture.md)
